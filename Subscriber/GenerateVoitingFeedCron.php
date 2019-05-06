@@ -11,6 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 class GenerateVoitingFeedCron implements SubscriberInterface
 {
+
     /** @var  ContainerInterface */
     private $container;
     /**
@@ -45,18 +46,25 @@ class GenerateVoitingFeedCron implements SubscriberInterface
         # Builde array structure to generate XML
         $voteArray = array();
 
+        $host = $this->getHost();
+        $host = $host[0]['host'] . $host[0]['base_path'];
+
         foreach ($votes as $key => $vote) {
+
+            $url = $this->getSeoUrl($vote['id']);
+            $url = $host .'/'. $url[0]['path'];
+
             $voteArray[$key]['reviewer']['name'] = $this->convertText($vote['nameBewertung']);
             $voteArray[$key]['review_timestamp'] = $vote['voteDate'];
             $voteArray[$key]['title'] = $this->convertText($vote['headline']);
             $voteArray[$key]['content'] = $this->convertText($vote['comment']);
-            $voteArray[$key]['review_url'] = 'URL';
+            $voteArray[$key]['review_url'] = $url;
             $voteArray[$key]['ratings']['overall'] = $vote['points'];
             $voteArray[$key]['products']['product']['product_ids']['gtins']['gtin'] = $vote['ean'];
             $voteArray[$key]['products']['product']['product_ids']['skus']['sku'] = $vote['ordernumber'];
             $voteArray[$key]['products']['product']['product_ids']['brands']['brand'] = $vote['brand'];
             $voteArray[$key]['products']['product']['product_ids']['product_name'] = $this->convertText($vote['name']);
-            $voteArray[$key]['products']['product']['product_ids']['product_url'] = 'URL';
+            $voteArray[$key]['products']['product']['product_ids']['product_url'] = $url;
             $voteArray[$key]['is_spam'] = 'false';
         }
 
@@ -96,11 +104,6 @@ class GenerateVoitingFeedCron implements SubscriberInterface
 
        $this->saveVotes($xml);
 
-        echo '<pre>';
-        echo var_dump($xml);
-        echo '</pre>';
-
-
         return 'Laufzeit: ' . gmdate("H:i:s", $this->stopTimer($start));
     }
 
@@ -119,7 +122,7 @@ class GenerateVoitingFeedCron implements SubscriberInterface
         /** @var \Doctrine\DBAL\Connection $connection */
         $connection = $this->container->get('dbal_connection');
         $builder = $connection->createQueryBuilder();
-        $builder->select('sav.name AS nameBewertung, sav.datum AS voteDate, sas.name AS brand, headline, comment, points, ean, ordernumber, sa.name')
+        $builder->select('sa.id, sav.name AS nameBewertung, sav.datum AS voteDate, sas.name AS brand, headline, comment, points, ean, ordernumber, sa.name')
             ->from('s_articles_vote', 'sav')
             ->innerJoin('sav',
                 's_articles',
@@ -149,6 +152,19 @@ class GenerateVoitingFeedCron implements SubscriberInterface
         return $stmt->fetchAll();
     }
 
+    private function getSeoUrl($articleID) {
+
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->container->get('dbal_connection');
+        $builder = $connection->createQueryBuilder();
+        $builder->select('*')
+            ->from('s_core_rewrite_urls')
+            ->where("org_path = 'sViewport=detail&sArticle=".$articleID . "'")
+            ->andWhere('main = 1');
+        $stmt = $builder->execute();
+        return $stmt->fetchAll();
+    }
+
     private function saveVotes($feed) {
 
         /** @var \Doctrine\DBAL\Connection $connection */
@@ -159,6 +175,17 @@ class GenerateVoitingFeedCron implements SubscriberInterface
             ->setParameter(0, $feed)
             ->where('id = 1');
         $builder->execute();
+    }
+
+    public function getHost() {
+
+        /** @var \Doctrine\DBAL\Connection $connection */
+        $connection = $this->container->get('dbal_connection');
+        $builder = $connection->createQueryBuilder();
+        $builder->select('host, base_path')
+            ->from('s_core_shops');
+        $stmt = $builder->execute();
+        return $stmt->fetchAll();
     }
 
     private function startTimer()
