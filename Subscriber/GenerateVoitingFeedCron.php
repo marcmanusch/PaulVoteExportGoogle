@@ -32,6 +32,7 @@ class GenerateVoitingFeedCron implements SubscriberInterface
         ];
     }
 
+
     /**
      * @param \Shopware_Components_Cron_CronJob $job
      * @return string
