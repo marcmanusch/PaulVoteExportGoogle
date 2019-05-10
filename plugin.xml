@@ -10,7 +10,6 @@
 
     <compatibility minVersion="5.2.0" />
 
-
     <changelog version="1.0.1">
         <changes lang="de">Fix feed</changes>
     </changelog>
