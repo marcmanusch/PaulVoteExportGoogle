@@ -2,13 +2,18 @@
 <plugin xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="../../../engine/Shopware/Components/Plugin/schema/plugin.xsd">
     <label lang="de">Google Produktbewertungen Export</label>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <copyright>Marc Manusch</copyright>
     <license>proprietary</license>
     <link>github.com/marcmanusch</link>
     <author>Marc Manusch</author>
 
     <compatibility minVersion="5.2.0" />
+
+
+    <changelog version="1.0.1">
+        <changes lang="de">Fix feed</changes>
+    </changelog>
 
     <changelog version="1.0.0">
         <changes lang="de">Erste Veröffentlichung</changes>

@@ -70,38 +70,57 @@ class GenerateVoitingFeedCron implements SubscriberInterface
 
 
         # create XML
-        $xml_votes_info = new \SimpleXMLElement("<?xml version=\"1.0\" encoding=\"UTF-8\"?><feed xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.google.com/shopping/reviews/schema/product/2.1/product_reviews.xsd\"><reviews></reviews></feed>");
+        $feed = new \SimpleXMLElement("<?xml version=\"1.0\" encoding=\"UTF-8\"?><feed xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://www.google.com/shopping/reviews/schema/product/2.1/product_reviews.xsd\"></feed>");
 
-        function array_to_xml($voteArray, $xml_votes_info) {
-            foreach($voteArray as $key => $value) {
-                if(is_array($value)) {
-                    if(!is_numeric($key)){
-                        $subnode = $xml_votes_info->addChild("$key");
-                        array_to_xml($value, $subnode);
-                    }elseif ($key === '@attributes') {
-                        foreach ($subnode as $n => $v) {
-                            $subnode = $xml_votes_info->addChild("$key");
-                            $subnode->addAttribute($n, $v);
-                        }
-                    }
-                    else{
-                        $subnode = $xml_votes_info->addChild("review");
-                        array_to_xml($value, $subnode);
-                    }
-                }
-                else {
-                    $xml_votes_info->addChild("$key","$value");
-                }
-            }
+        $reviews = $feed->addChild('reviews');
+        $publisher = $feed->addChild('publisher');
+        $publisher_name = $publisher->addChild('name');
+        $publisher_name[0] = 'PaulGurkes';
+
+
+        foreach($voteArray as $key => $value) {
+
+            $review = $reviews->addChild('review');
+            $reviewer = $review->addChild('reviewer');
+            $reviewer_name =  $reviewer->addChild('name');
+            $reviewer_name[0] = $voteArray[$key]['reviewer']['name'];
+            $review_timestamp = $review->addChild('review_timestamp');
+            $review_timestamp[0] = $voteArray[$key]['review_timestamp'];
+            $title = $review->addChild('title');
+            $title[0] = $voteArray[$key]['title'];
+            $content = $review->addChild('content');
+            $content[0] = $voteArray[$key]['content'];
+            $review_url = $review->addChild('review_url');
+            $review_url[0] = $voteArray[$key]['review_url'];
+            $ratings = $review->addChild('ratings');
+            $overall = $ratings->addChild('overall');
+            $overall[0] = $voteArray[$key]['ratings']['overall'];
+            $overall->addAttribute('min', 1);
+            $overall->addAttribute('max', 5);
+            $products = $review->addChild('products');
+            $product = $products->addChild('product');
+            $product_ids = $product->addChild('product_ids');
+            $gtins = $product_ids->addChild('gtins');
+            $gtin = $gtins->addChild('gtin');
+            $gtin[0] = $voteArray[$key]['products']['product']['product_ids']['gtins']['gtin'];
+            $skus = $product_ids->addChild('skus');
+            $sku = $skus->addChild('sku');
+            $sku[0] = $voteArray[$key]['products']['product']['product_ids']['skus']['sku'];
+            $brands = $product_ids->addChild('brands');
+            $brand = $brands->addChild('brand');
+            $brand[0] = $voteArray[$key]['products']['product']['product_ids']['brands']['brand'];
+            $product_name = $product_ids->addChild('product_name');
+            $product_name[0] = $voteArray[$key]['products']['product']['product_ids']['product_name'];
+            $product_url = $product_ids->addChild('product_url');
+            $product_url[0] = $voteArray[$key]['products']['product']['product_ids']['product_url'];
+            $is_spam = $products->addChild('is_spam');
+            $is_spam[0] = 'false';
+
+
         }
 
-        array_to_xml($voteArray, $xml_votes_info);
-        $xml = $xml_votes_info->asXML();
 
-
-        #replace <overall> to add attributes
-        $xml = str_replace('<overall>','<overall min="1" max="5">', $xml);
-
+        $xml = $feed->asXML();
        $this->saveVotes($xml);
 
         return 'Laufzeit: ' . gmdate("H:i:s", $this->stopTimer($start));
