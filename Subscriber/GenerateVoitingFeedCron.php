@@ -55,8 +55,12 @@ class GenerateVoitingFeedCron implements SubscriberInterface
             $url = $this->getSeoUrl($vote['id']);
             $url = $host .'/'. $url[0]['path'];
 
+            $date = $vote['voteDate'];
+            $date = new \DateTime($date);
+            $date = $date->format('c');
+
             $voteArray[$key]['reviewer']['name'] = $this->convertText($vote['nameBewertung']);
-            $voteArray[$key]['review_timestamp'] = $vote['voteDate'];
+            $voteArray[$key]['review_timestamp'] = $date;
             $voteArray[$key]['title'] = $this->convertText($vote['headline']);
             $voteArray[$key]['content'] = $this->convertText($vote['comment']);
             $voteArray[$key]['review_url'] = $url;
@@ -92,7 +96,7 @@ class GenerateVoitingFeedCron implements SubscriberInterface
             $content = $review->addChild('content');
             $content[0] = $voteArray[$key]['content'];
             $review_url = $review->addChild('review_url');
-            $review_url[0] = $voteArray[$key]['review_url'];
+            $review_url[0] = 'https://'.$voteArray[$key]['review_url'];
             $ratings = $review->addChild('ratings');
             $overall = $ratings->addChild('overall');
             $overall[0] = $voteArray[$key]['ratings']['overall'];
