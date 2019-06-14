@@ -114,10 +114,10 @@ class GenerateVoitingFeedCron implements SubscriberInterface
             $brands = $product_ids->addChild('brands');
             $brand = $brands->addChild('brand');
             $brand[0] = $voteArray[$key]['products']['product']['product_ids']['brands']['brand'];
-            $product_name = $product_ids->addChild('product_name');
-            $product_name[0] = $voteArray[$key]['products']['product']['product_ids']['product_name'];
-            $product_url = $product_ids->addChild('product_url');
-            $product_url[0] = $voteArray[$key]['products']['product']['product_ids']['product_url'];
+            $product_name = $product->addChild('product_name');
+            $product_name[0] = $voteArray[$key]['products']['product']['product_name'];
+            $product_url = $product->addChild('product_url');
+            $product_url[0] = 'https://'.$voteArray[$key]['products']['product']['product_url'];
             $is_spam = $products->addChild('is_spam');
             $is_spam[0] = 'false';
 
