@@ -68,8 +68,8 @@ class GenerateVoitingFeedCron implements SubscriberInterface
             $voteArray[$key]['products']['product']['product_ids']['gtins']['gtin'] = $vote['ean'];
             $voteArray[$key]['products']['product']['product_ids']['skus']['sku'] = $vote['ordernumber'];
             $voteArray[$key]['products']['product']['product_ids']['brands']['brand'] = $vote['brand'];
-            $voteArray[$key]['products']['product']['product_ids']['product_name'] = $this->convertText($vote['name']);
-            $voteArray[$key]['products']['product']['product_ids']['product_url'] = $url;
+            $voteArray[$key]['products']['product']['product_name'] = $this->convertText($vote['name']);
+            $voteArray[$key]['products']['product']['product_url'] = $url;
             $voteArray[$key]['is_spam'] = 'false';
         }
 
